@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?><sqlb_project><db path="/Users/adityavenkatraman/Desktop/please_work.db" readonly="0" foreign_keys="1" case_sensitive_like="0" temp_store="0" wal_autocheckpoint="1000" synchronous="2"/><attached/><window><main_tabs open="structure browser pragmas query" current="3"/></window><tab_structure><column_width id="0" width="300"/><column_width id="1" width="0"/><column_width id="2" width="100"/><column_width id="3" width="2905"/><column_width id="4" width="0"/><expanded_item id="0" parent="1"/><expanded_item id="1" parent="1"/><expanded_item id="2" parent="1"/><expanded_item id="3" parent="1"/></tab_structure><tab_browse><current_table name="4,19:mainSales_data_sample_2"/><default_encoding codec=""/><browse_table_settings><table schema="main" name="Sales_data" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_"><sort/><column_widths><column index="1" value="90"/><column index="2" value="112"/><column index="3" value="68"/><column index="4" value="113"/><column index="5" value="56"/><column index="6" value="93"/><column index="7" value="62"/><column index="8" value="47"/><column index="9" value="65"/><column index="10" value="54"/><column index="11" value="98"/><column index="12" value="38"/><column index="13" value="89"/><column index="14" value="175"/><column index="15" value="106"/><column index="16" value="232"/><column index="17" value="87"/><column index="18" value="85"/><column index="19" value="72"/><column index="20" value="78"/><column index="21" value="69"/><column index="22" value="67"/><column index="23" value="116"/><column index="24" value="119"/><column index="25" value="59"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table><table schema="main" name="Sales_data_sample_2" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_"><sort><column index="10" mode="1"/></sort><column_widths><column index="1" value="89"/><column index="2" value="111"/><column index="3" value="68"/><column index="4" value="111"/><column index="5" value="56"/><column index="6" value="93"/><column index="7" value="62"/><column index="8" value="48"/><column index="9" value="66"/><column index="10" value="54"/><column index="11" value="98"/><column index="12" value="43"/><column index="13" value="89"/><column index="14" value="175"/><column index="15" value="106"/><column index="16" value="232"/><column index="17" value="86"/><column index="18" value="85"/><column index="19" value="72"/><column index="20" value="78"/><column index="21" value="69"/><column index="22" value="67"/><column index="23" value="114"/><column index="24" value="117"/><column index="25" value="60"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table></browse_table_settings></tab_browse><tab_sql><sql name="SQL 1">-- Inspecting data
+SELECT *
+FROM Sales_data;
+-- Identifying distinct  values 
+SELECT distinct STATUS from Sales_data 
+SELECT distinct year_id from Sales_data
+SELECT distinct PRODUCTLINE from Sales_data
+SELECT distinct COUNTRY from Sales_data
+SELECT distinct DEALSIZE from Sales_data
+SELECT distinct TERRITORY from Sales_data
+
+-- Grouping sales by product line
+select PRODUCTLINE, sum(sales) * PRICEEACH AS Revenue
+from Sales_data
+group by PRODUCTLINE
+order by 2 desc;
+-- Year with highest sales 
+select YEAR_ID, sum(sales)  AS Sales
+from Sales_data
+group by YEAR_ID
+order by 2 desc;
+-- Revenue for 2005 seems to be very low.  Inspecting months of 
+-- operations that year 
+select distinct MONTH_ID from Sales_data
+where year_id = 2005
+-- The company only had 5 months worth of sales
+--,in 2005 explaining their low sales
+
+-- What size of deals generate the most sales ?
+select DEALSIZE, sum(sales) as sales 
+FROM Sales_data
+GROUP BY DEALSIZE
+order by 2 desc;
+-- Medium sized deals generate the most revenue
+
+-- What is the best month for sales in a specific year ? 
+--How much was earned that month ?
+select MONTH_ID,sum(sales) AS revenue,count(ORDERNUMBER) as units_sold
+from Sales_data
+WHERE YEAR_ID = 2003
+group by MONTH_ID
+order by 2 desc;
+
+select MONTH_ID,sum(sales) AS revenue,count(ORDERNUMBER) as units_sold
+from Sales_data
+WHERE YEAR_ID = 2004
+group by MONTH_ID
+order by 2 desc;
+
+select MONTH_ID,sum(sales) AS revenue,count(ORDERNUMBER) as units_sold
+from Sales_data
+WHERE YEAR_ID = 2005
+group by MONTH_ID
+order by 2 desc;
+
+-- November  is the best month for 2003 and 2004. 
+-- What are their best selling producrts for November ?
+select MONTH_ID, PRODUCTLINE,sum(sales) AS revenue,count(ORDERNUMBER) as units_sold
+from Sales_data
+WHERE YEAR_ID = 2003 AND MONTH_ID = 11
+group by MONTH_ID, PRODUCTLINE
+order by 3 desc;
+
+select MONTH_ID, PRODUCTLINE,sum(sales) AS revenue,count(ORDERNUMBER) as units_sold
+from Sales_data
+WHERE YEAR_ID = 2004 AND MONTH_ID = 11
+group by MONTH_ID, PRODUCTLINE
+order by 3 desc;
+-- Classic cars seem to be the most commerically sold product 
+
+
+
+-- Who is the best customer ?
+;with rfm as 
+(
+	select 
+		CUSTOMERNAME, 
+		sum(sales)  as MonetaryValue,
+		avg(sales) as  AvgMonetaryValue,
+		count(ORDERNUMBER) as Frequency,
+		max(ORDERDATE) as last_order_date,
+		(select max(ORDERDATE) from sales_data_sample_2) as max_order_date,
+		Julianday(ORDERDATE, max(ORDERDATE), (select max(ORDERDATE) from sales_data_sample_2)) as Recency
+	from Sales_data_sample_2
+	group by CUSTOMERNAME
+	
+)
+select * from rfm;</sql><current_tab id="0"/></tab_sql></sqlb_project>
